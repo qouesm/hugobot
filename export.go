@@ -1,6 +1,6 @@
 package main
 
-import . "gitlab.com/qouesm/qbot/commands"
+import . "gitlab.com/qouesm/hugobot/commands"
 
 func exportCommands() []Command {
 	return []Command{

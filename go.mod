@@ -1,4 +1,4 @@
-module gitlab.com/qouesm/qbot
+module gitlab.com/qouesm/hugobot
 
 go 1.16
 

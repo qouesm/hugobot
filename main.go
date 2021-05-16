@@ -20,6 +20,7 @@ var (
 
 // init vars
 func init() {
+	// using my own QBOT to test for now; new bot will come soon
 	Token = os.Getenv("QBOT")
 	activeGuilds = []string{
 		"510285602785198081", // qserver
