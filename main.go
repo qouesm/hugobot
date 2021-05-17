@@ -9,13 +9,11 @@ import (
 )
 
 var (
-	Token        string
-	activeGuilds []string
-
+	s               *discordgo.Session
+	Token           string
+	activeGuilds    []string
 	appCommands     []*discordgo.ApplicationCommand
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){}
-
-	s *discordgo.Session
 )
 
 // init vars
@@ -36,8 +34,8 @@ func init() {
 	}
 
 	// DEBUG
-	log.Println("appCommands:     ", appCommands)
-	log.Println("commandHandlers: ", commandHandlers)
+	// log.Println("appCommands:     ", appCommands)
+	// log.Println("commandHandlers: ", commandHandlers)
 
 	var err error
 	s, err = discordgo.New("Bot " + Token)
@@ -61,30 +59,18 @@ func main() {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
 
-	for i, v := range appCommands {
-		for j, g := range s.State.Guilds {
+	for _, g := range s.State.Guilds {
+		for _, v := range appCommands {
 			// whitelist certain guilds for now
 			if !isActiveGuild(g.ID) {
 				continue
 			}
 
-			c, err := s.ApplicationCommandCreate(s.State.User.ID, g.ID, v)
+			_, err := s.ApplicationCommandCreate(s.State.User.ID, g.ID, v)
 			if err != nil {
 				log.Panicf("Cannot create '%v' command: %v", v.Name, err)
 			}
-
-			if i == 0 {
-				log.Println("Added command: ", c)
-			}
-			if j == 0 {
-				log.Println("bot is active in: ", g.Name)
-			}
 		}
-	}
-
-	log.Println("All builds bot is in")
-	for _, g := range s.State.Guilds {
-		log.Println(g.Name)
 	}
 
 	defer s.Close()
