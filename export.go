@@ -1,13 +1,13 @@
 package main
 
-import . "gitlab.com/qouesm/hugobot/commands"
+import "gitlab.com/qouesm/hugobot/commands"
 
-func exportCommands() []Command {
-	return []Command{
-		ClassClear,
-		Options,
-		Ping,
-		Quietping,
-		Uhoh,
+func exportCommands() []commands.Command {
+	return []commands.Command{
+		commands.ClassClear,
+		commands.Options,
+		commands.Ping,
+		commands.Quietping,
+		commands.Uhoh,
 	}
 }

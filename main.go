@@ -12,7 +12,7 @@ var (
 	s               *discordgo.Session
 	Token           string
 	activeGuilds    []string
-	appCommands     []*discordgo.ApplicationCommand
+	appCommands     []discordgo.ApplicationCommand
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){}
 )
 
@@ -29,9 +29,10 @@ func init() {
 	commandList := exportCommands()
 	for _, c := range commandList {
 		log.Println("adding to lists: ", c.AppCommand.Name)
-		appCommands = append(appCommands, &c.AppCommand)
+		appCommands = append(appCommands, c.AppCommand)
 		commandHandlers[c.AppCommand.Name] = c.Handler
 	}
+	log.Println("aC:", appCommands)
 
 	// DEBUG
 	// log.Println("appCommands:     ", appCommands)
@@ -59,14 +60,18 @@ func main() {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
 
+	log.Println(appCommands)
+
 	for _, g := range s.State.Guilds {
 		for _, v := range appCommands {
+			log.Println(g.Name)
+			log.Println(v)
 			// whitelist certain guilds for now
 			if !isActiveGuild(g.ID) {
 				continue
 			}
 
-			_, err := s.ApplicationCommandCreate(s.State.User.ID, g.ID, v)
+			_, err := s.ApplicationCommandCreate(s.State.User.ID, g.ID, &v)
 			if err != nil {
 				log.Panicf("Cannot create '%v' command: %v", v.Name, err)
 			}
