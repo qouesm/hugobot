@@ -10,7 +10,7 @@ If you are a member of said server and you know or want to learn some Go and wan
 
 * Setup reactive roles; (un)react to a message to (lose)gain a role
 
-* Add command to wipe assignment of certain reacted roles for all members
+* ~~Add command to wipe assignment of certain reacted roles for all members~~
 
 #### In the future
 

@@ -28,15 +28,10 @@ func init() {
 
 	commandList := exportCommands()
 	for _, c := range commandList {
-		log.Println("adding to lists: ", c.AppCommand.Name)
+		log.Println("found command:", c.AppCommand.Name)
 		appCommands = append(appCommands, c.AppCommand)
 		commandHandlers[c.AppCommand.Name] = c.Handler
 	}
-	log.Println("aC:", appCommands)
-
-	// DEBUG
-	// log.Println("appCommands:     ", appCommands)
-	// log.Println("commandHandlers: ", commandHandlers)
 
 	var err error
 	s, err = discordgo.New("Bot " + Token)
@@ -60,12 +55,8 @@ func main() {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
 
-	log.Println(appCommands)
-
 	for _, g := range s.State.Guilds {
 		for _, v := range appCommands {
-			log.Println(g.Name)
-			log.Println(v)
 			// whitelist certain guilds for now
 			if !isActiveGuild(g.ID) {
 				continue
