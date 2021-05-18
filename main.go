@@ -48,13 +48,14 @@ func init() {
 
 func main() {
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		log.Println("Bot is up!")
+		log.Println("bot is online")
 	})
 	err := s.Open()
 	if err != nil {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
 
+	log.Println("registering commands")
 	for _, g := range s.State.Guilds {
 		for _, v := range appCommands {
 			// whitelist certain guilds for now
@@ -68,13 +69,33 @@ func main() {
 			}
 		}
 	}
+	log.Println("commands registered")
 
 	defer s.Close()
 
 	stop := make(chan os.Signal)
 	signal.Notify(stop, os.Interrupt)
+	log.Println("bot is ready")
 	<-stop
-	log.Println("Gracefully shutdowning")
+
+	// log.Println("unregistering commands")
+	// for _, g := range s.State.Guilds {
+	// 	ac, err := s.ApplicationCommands(s.State.User.ID, g.ID)
+	// 	if err != nil {
+	// 		log.Printf("Problem getting application commands from %v, %v", g.Name, err)
+	// 		continue
+	// 	}
+	// 	for _, v := range ac {
+	// 		// log.Println("removing: ", v.Name)
+	// 		err := s.ApplicationCommandDelete(s.State.User.ID, g.ID, v.ID)
+	// 		if err != nil {
+	// 			log.Printf("Cannot remove '%v' command: %v", v.Name, err)
+	// 		}
+	// 	}
+	// }
+	// log.Println("commands unregistered")
+
+	log.Println("shutting down")
 }
 
 func isActiveGuild(ID string) bool {

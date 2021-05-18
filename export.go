@@ -8,6 +8,7 @@ func exportCommands() []commands.Command {
 		commands.Options,
 		commands.Ping,
 		commands.Quietping,
+		commands.ReactRoles,
 		commands.Uhoh,
 	}
 }
