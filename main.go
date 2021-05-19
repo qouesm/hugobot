@@ -57,12 +57,11 @@ func main() {
 
 	log.Println("registering commands")
 	for _, g := range s.State.Guilds {
+		// whitelist certain guilds for now
+		if !isActiveGuild(g.ID) {
+			continue
+		}
 		for _, v := range appCommands {
-			// whitelist certain guilds for now
-			if !isActiveGuild(g.ID) {
-				continue
-			}
-
 			_, err := s.ApplicationCommandCreate(s.State.User.ID, g.ID, &v)
 			if err != nil {
 				log.Panicf("Cannot create '%v' command: %v", v.Name, err)
