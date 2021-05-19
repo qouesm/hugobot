@@ -1,8 +1,10 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
@@ -110,12 +112,12 @@ var ReactRoles = Command{
 			msgFormat string
 			cArgs     []interface{} // used internally
 			mArgs     []interface{} // used for msgFormat
+			mRoles    []*discordgo.Role
 		)
 
 		switch i.Data.Options[0].Name {
 		case "create":
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				// Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 				Data: &discordgo.InteractionApplicationCommandResponseData{},
 			})
@@ -135,8 +137,20 @@ var ReactRoles = Command{
 				role := i.Data.Options[0].Options[count].RoleValue(s, i.GuildID)
 				cArgs = append(cArgs, role)
 				mArgs = append(mArgs, role.ID, role.Name)
+				mRoles = append(mRoles, role)
 			}
 			wgIns.Done()
+
+			log.Println("printing mRoles")
+			for i, v := range mRoles {
+				log.Println(i, v.Name)
+			}
+			log.Println("lets try gettings ints from the map")
+			log.Println(emojiNum[&discordgo.Emoji{Name: "2️⃣"}])
+			log.Println(emojiNum)
+			for k, v := range emojiNum {
+				log.Println(k, v)
+			}
 
 			for line, v := range cArgs {
 				switch t := v.(type) {
@@ -163,22 +177,58 @@ var ReactRoles = Command{
 				return
 			}
 
-			// s.FollowupMessageCreate(s.State.User.ID, i.Interaction, true, &discordgo.WebhookParams{Content: "1a"})
-			// s.InteractionResponseDelete(s.State.User.ID, i.Interaction)
-
-			// TODO: next part; a proper formatted message has been created.
-			// the message (rMsg) now needs to be populated with reactions
-			// and the actual role add/remove function must be setup and stored.
-
-			log.Println("adding reacts")
-			err = s.MessageReactionAdd(rMsg.ChannelID, rMsg.ID, numEmoji[0].ID)
-			if err != nil {
-				log.Println("Could not add reaction", numEmoji[0].Name, ",", err)
+			for num := 0; num < len(i.Data.Options[0].Options)-1; num++ {
+				s.MessageReactionAdd(rMsg.ChannelID, rMsg.ID, numEmoji[num].APIName())
 			}
-			// for num := 0; num < len(i.Data.Options[0].Options); num++ {
-			// 	log.Println("react,", num)
-			// 	s.MessageReactionAdd(rMsg.ChannelID, rMsg.ID, numEmoji[num].ID)
-			// }
+
+			s.AddHandler(func(s *discordgo.Session, mr *discordgo.MessageReactionAdd) {
+				if mr.UserID == s.State.User.ID {
+					return
+				}
+				if mr.MessageID == rMsg.ID {
+					log.Println("add:", mr.Emoji.APIName())
+
+					number := emojiNum[&mr.Emoji]
+					log.Println(number)
+					role := mRoles[number]
+
+					log.Println(number, mr.Emoji.APIName(), &mr.Emoji.Name, role.Name)
+					err := s.GuildMemberRoleAdd(mr.GuildID, mr.UserID, role.ID)
+					if err != nil {
+						log.Println("Couldn't add role:", mr.Emoji.User.Username, ",", err)
+					}
+				}
+			})
+
+			s.AddHandler(func(s *discordgo.Session, mr *discordgo.MessageReactionRemove) {
+				if mr.UserID == s.State.User.ID {
+					return
+				}
+				if mr.MessageID == rMsg.ID {
+					log.Println("del:", mr.Emoji.APIName())
+
+					number := emojiNum[&mr.Emoji]
+					log.Println(number)
+					role := mRoles[number]
+
+					log.Println(number, mr.Emoji.APIName(), &mr.Emoji.Name, role.Name)
+					err := s.GuildMemberRoleRemove(mr.GuildID, mr.UserID, role.ID)
+					if err != nil {
+						log.Println("Couldn't del role:", mr.Emoji.User.Username, ",", err)
+					}
+				}
+			})
+
+			file, err := os.Create("template.json")
+			if err != nil {
+				log.Println("problem creating file,", err)
+			}
+			defer file.Close()
+			js, err := json.Marshal(rMsg)
+			if err != nil {
+				log.Println("problem using marshal,", err)
+			}
+			file.Write(js)
 
 		case "edit":
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -194,15 +244,28 @@ var ReactRoles = Command{
 	},
 }
 
-var numEmoji = map[int]discordgo.Emoji{
-	0: {Name: ":zero:"},
-	1: {Name: ":one:"},
-	2: {Name: ":two:"},
-	3: {Name: ":three:"},
-	4: {Name: ":four:"},
-	5: {Name: ":five:"},
-	6: {Name: ":six:"},
-	7: {Name: ":seven:"},
-	8: {Name: "eight:"},
-	9: {Name: ":nine:"},
+var numEmoji = map[int]*discordgo.Emoji{
+	0: {Name: "0️⃣"},
+	1: {Name: "1️⃣"},
+	2: {Name: "2️⃣"},
+	3: {Name: "3️⃣"},
+	4: {Name: "4️⃣"},
+	5: {Name: "5️⃣"},
+	6: {Name: "6️⃣"},
+	7: {Name: "7️⃣"},
+	8: {Name: "8️⃣"},
+	9: {Name: "9️⃣"},
+}
+
+var emojiNum = map[*discordgo.Emoji]int{
+	{Name: "0️⃣"}: 0,
+	{Name: "1️⃣"}: 1,
+	{Name: "2️⃣"}: 2,
+	{Name: "3️⃣"}: 3,
+	{Name: "4️⃣"}: 4,
+	{Name: "5️⃣"}: 5,
+	{Name: "6️⃣"}: 6,
+	{Name: "7️⃣"}: 7,
+	{Name: "8️⃣"}: 8,
+	{Name: "9️⃣"}: 9,
 }

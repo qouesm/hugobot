@@ -9,6 +9,7 @@ func exportCommands() []commands.Command {
 		commands.Ping,
 		commands.Quietping,
 		commands.ReactRoles,
+		commands.RestartHandlers,
 		commands.Uhoh,
 	}
 }
