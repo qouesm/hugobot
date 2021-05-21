@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
+	"gitlab.com/qouesm/hugobot/hooks"
 )
 
 var ReactRoles = Command{
@@ -18,8 +19,7 @@ var ReactRoles = Command{
 			{
 				Name:        "create",
 				Description: "Create a reaction role message",
-				// Type:			discordgo.ApplicationCommandOptionSubCommandGroup,
-				Type: discordgo.ApplicationCommandOptionSubCommand,
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
 				Options: []*discordgo.ApplicationCommandOption{
 					{
 						Name:        "header",
@@ -122,6 +122,14 @@ var ReactRoles = Command{
 				Data: &discordgo.InteractionApplicationCommandResponseData{},
 			})
 
+			/* what this case does:
+			parses the options,
+			creates a message,
+			adds reactions,
+			saves message struct and roles array to json,
+			call reactroles hook (handlers are there)
+			*/
+
 			cArgs = []interface{}{
 				i.Data.Options[0].Options[0].StringValue(), // header
 			}
@@ -141,17 +149,6 @@ var ReactRoles = Command{
 			}
 			wgIns.Done()
 
-			log.Println("printing mRoles")
-			for i, v := range mRoles {
-				log.Println(i, v.Name)
-			}
-			log.Println("lets try gettings ints from the map")
-			log.Println(emojiNum[&discordgo.Emoji{Name: "2️⃣"}])
-			log.Println(emojiNum)
-			for k, v := range emojiNum {
-				log.Println(k, v)
-			}
-
 			for line, v := range cArgs {
 				switch t := v.(type) {
 				case string:
@@ -166,6 +163,7 @@ var ReactRoles = Command{
 				}
 			}
 
+			// create message
 			rMsg, err := s.FollowupMessageCreate(s.State.User.ID, i.Interaction, true, &discordgo.WebhookParams{
 				Content: fmt.Sprintf(
 					msgFormat,
@@ -174,61 +172,48 @@ var ReactRoles = Command{
 			})
 			if err != nil {
 				log.Println("/reactroles create; problem creating message,", err)
+				panicResponse(s, i)
 				return
 			}
 
+			// add reacitons
 			for num := 0; num < len(i.Data.Options[0].Options)-1; num++ {
 				s.MessageReactionAdd(rMsg.ChannelID, rMsg.ID, numEmoji[num].APIName())
 			}
 
-			s.AddHandler(func(s *discordgo.Session, mr *discordgo.MessageReactionAdd) {
-				if mr.UserID == s.State.User.ID {
-					return
-				}
-				if mr.MessageID == rMsg.ID {
-					log.Println("add:", mr.Emoji.APIName())
+			// save to json
+			var save = JsonSave{
+				Msg:   rMsg,
+				Roles: mRoles,
+			}
 
-					number := emojiNum[&mr.Emoji]
-					log.Println(number)
-					role := mRoles[number]
-
-					log.Println(number, mr.Emoji.APIName(), &mr.Emoji.Name, role.Name)
-					err := s.GuildMemberRoleAdd(mr.GuildID, mr.UserID, role.ID)
-					if err != nil {
-						log.Println("Couldn't add role:", mr.Emoji.User.Username, ",", err)
-					}
-				}
-			})
-
-			s.AddHandler(func(s *discordgo.Session, mr *discordgo.MessageReactionRemove) {
-				if mr.UserID == s.State.User.ID {
-					return
-				}
-				if mr.MessageID == rMsg.ID {
-					log.Println("del:", mr.Emoji.APIName())
-
-					number := emojiNum[&mr.Emoji]
-					log.Println(number)
-					role := mRoles[number]
-
-					log.Println(number, mr.Emoji.APIName(), &mr.Emoji.Name, role.Name)
-					err := s.GuildMemberRoleRemove(mr.GuildID, mr.UserID, role.ID)
-					if err != nil {
-						log.Println("Couldn't del role:", mr.Emoji.User.Username, ",", err)
-					}
-				}
-			})
-
-			file, err := os.Create("template.json")
+			// file, err := os.Create("template.json")
+			file, err := os.OpenFile("hooks/reactrolesmessages.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 			if err != nil {
-				log.Println("problem creating file,", err)
+				log.Println("problem reading file,", err)
+				panicResponse(s, i)
+				err := s.InteractionResponseDelete(s.State.User.ID, i.Interaction)
+				if err != nil {
+					log.Println("Could not delete response (you got some big problems,", err)
+				}
+				return
 			}
 			defer file.Close()
-			js, err := json.Marshal(rMsg)
+
+			js, err := json.Marshal(save)
 			if err != nil {
 				log.Println("problem using marshal,", err)
+				panicResponse(s, i)
+				err := s.InteractionResponseDelete(s.State.User.ID, i.Interaction)
+				if err != nil {
+					log.Println("Could not delete response (you got some big problems,", err)
+				}
+				return
 			}
 			file.Write(js)
+			file.WriteString("\n")
+
+			hooks.ReactRoles(s)
 
 		case "edit":
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
@@ -244,6 +229,7 @@ var ReactRoles = Command{
 	},
 }
 
+// returns discordgo Emoji struct from the corresponding int
 var numEmoji = map[int]*discordgo.Emoji{
 	0: {Name: "0️⃣"},
 	1: {Name: "1️⃣"},
@@ -257,15 +243,7 @@ var numEmoji = map[int]*discordgo.Emoji{
 	9: {Name: "9️⃣"},
 }
 
-var emojiNum = map[*discordgo.Emoji]int{
-	{Name: "0️⃣"}: 0,
-	{Name: "1️⃣"}: 1,
-	{Name: "2️⃣"}: 2,
-	{Name: "3️⃣"}: 3,
-	{Name: "4️⃣"}: 4,
-	{Name: "5️⃣"}: 5,
-	{Name: "6️⃣"}: 6,
-	{Name: "7️⃣"}: 7,
-	{Name: "8️⃣"}: 8,
-	{Name: "9️⃣"}: 9,
+type JsonSave struct {
+	Msg   *discordgo.Message
+	Roles []*discordgo.Role
 }

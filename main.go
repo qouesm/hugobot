@@ -6,6 +6,7 @@ import (
 	"os/signal"
 
 	"github.com/bwmarrin/discordgo"
+	"gitlab.com/qouesm/hugobot/hooks"
 )
 
 var (
@@ -54,7 +55,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Cannot open the session: %v", err)
 	}
+	s.UpdateGameStatus(4, "⚙ bot is starting...")
 
+	defer s.Close()
+
+	stop := make(chan os.Signal)
 	log.Println("registering commands")
 	for _, g := range s.State.Guilds {
 		// whitelist certain guilds for now
@@ -70,9 +75,12 @@ func main() {
 	}
 	log.Println("commands registered")
 
-	defer s.Close()
+	log.Println("restarting hooks")
+	hooks.ReactRoles(s)
+	log.Println("started hooks")
 
-	stop := make(chan os.Signal)
+	s.UpdateGameStatus(4, "⚠ Under construction")
+
 	signal.Notify(stop, os.Interrupt)
 	log.Println("bot is ready")
 	<-stop

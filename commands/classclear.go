@@ -3,7 +3,6 @@ package commands
 import (
 	"log"
 	"regexp"
-	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -71,25 +70,4 @@ var ClassClear = Command{
 			},
 		})
 	},
-}
-
-func panicResponse(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionApplicationCommandResponseData{
-			Content: "Something went wrong",
-		},
-	})
-}
-
-// passing the state and guild ID is sloppy but Member.roles only returns role ID's and not the structs
-
-func hasAdmin(slice []string, state *discordgo.State, gID string) bool {
-	for _, v := range slice {
-		r, _ := state.Role(gID, v)
-		if strings.EqualFold(r.Name, "admin") {
-			return true
-		}
-	}
-	return false
 }
