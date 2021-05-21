@@ -223,7 +223,7 @@ var ReactRoles = Command{
 			}
 
 			// add reacitons
-			for num := 0; num < len(i.Data.Options[0].Options)-1; num++ {
+			for num := 0; num < len(roles); num++ {
 				s.MessageReactionAdd(msg.ChannelID, msg.ID, numEmoji[num].APIName())
 			}
 

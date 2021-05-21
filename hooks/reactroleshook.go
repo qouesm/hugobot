@@ -44,7 +44,13 @@ func ReactRoles(s *discordgo.Session) {
 				role := save.Roles[number]
 				err := s.GuildMemberRoleAdd(mr.GuildID, mr.UserID, role.ID)
 				if err != nil {
-					log.Println("Couldn't add role:", mr.Emoji.User.Username, ",", err)
+					user, err1 := s.User(mr.UserID)
+					if err1 != nil {
+						log.Println("Couln't get user's struct,", err1)
+						log.Println("Couldn't add role,", err)
+						return
+					}
+					log.Println("Couldn't add role:", user.Username, ",", err)
 					return
 				}
 
@@ -76,7 +82,13 @@ func ReactRoles(s *discordgo.Session) {
 				role := save.Roles[number]
 				err := s.GuildMemberRoleRemove(mr.GuildID, mr.UserID, role.ID)
 				if err != nil {
-					log.Println("Couldn't del role:", mr.Emoji.User.Username, ",", err)
+					user, err1 := s.User(mr.UserID)
+					if err1 != nil {
+						log.Println("Couln't get user's struct,", err1)
+						log.Println("Couldn't add role,", err)
+						return
+					}
+					log.Println("Couldn't del role:", user.Username, ",", err)
 					return
 				}
 
