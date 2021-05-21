@@ -45,6 +45,23 @@ func ReactRoles(s *discordgo.Session) {
 				err := s.GuildMemberRoleAdd(mr.GuildID, mr.UserID, role.ID)
 				if err != nil {
 					log.Println("Couldn't add role:", mr.Emoji.User.Username, ",", err)
+					return
+				}
+
+				dm, err := s.UserChannelCreate(mr.UserID)
+				if err != nil {
+					log.Println("could not create dm channel,", err)
+					return
+				}
+				g, err := s.Guild(mr.GuildID)
+				if err != nil {
+					log.Println("could not get current guild,", err)
+					return
+				}
+				_, err = s.ChannelMessageSend(dm.ID, g.Name+": ADDED @"+role.Name)
+				if err != nil {
+					log.Println("could not dm user,", err)
+					return
 				}
 			}
 		})
@@ -60,10 +77,26 @@ func ReactRoles(s *discordgo.Session) {
 				err := s.GuildMemberRoleRemove(mr.GuildID, mr.UserID, role.ID)
 				if err != nil {
 					log.Println("Couldn't del role:", mr.Emoji.User.Username, ",", err)
+					return
+				}
+
+				dm, err := s.UserChannelCreate(mr.UserID)
+				if err != nil {
+					log.Println("could not create dm channel,", err)
+					return
+				}
+				g, err := s.Guild(mr.GuildID)
+				if err != nil {
+					log.Println("could not get current guild,", err)
+					return
+				}
+				_, err = s.ChannelMessageSend(dm.ID, g.Name+": REMOVED @"+role.Name)
+				if err != nil {
+					log.Println("could not dm user,", err)
+					return
 				}
 			}
 		})
-
 	}
 }
 
