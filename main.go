@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 
@@ -40,6 +41,7 @@ func init() {
 }
 
 func main() {
+	go herokuListen()
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("bot is online")
 	})
@@ -91,4 +93,15 @@ func main() {
 	log.Println("commands unregistered")
 
 	log.Println("shutting down")
+}
+
+func herokuListen() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Println("PORT not set")
+		return
+	}
+	if err := http.ListenAndServe(":" + port, nil); err != nil {
+		panic(err)
+	}
 }
