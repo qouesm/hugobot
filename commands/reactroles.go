@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"gitlab.com/qouesm/hugobot/hooks"
+	"github.com/qouesm/hugobot/hooks"
 )
 
 var ReactRoles = Command{

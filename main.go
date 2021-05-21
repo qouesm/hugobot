@@ -6,13 +6,12 @@ import (
 	"os/signal"
 
 	"github.com/bwmarrin/discordgo"
-	"gitlab.com/qouesm/hugobot/hooks"
+	"github.com/qouesm/hugobot/hooks"
 )
 
 var (
 	s               *discordgo.Session
 	Token           string
-	activeGuilds    []string
 	appCommands     []discordgo.ApplicationCommand
 	commandHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate){}
 )
@@ -20,12 +19,6 @@ var (
 // init vars
 func init() {
 	Token = os.Getenv("HUGOBOT")
-	activeGuilds = []string{
-		"510285602785198081", // qserver
-		"842613819057635328", // The Boys
-		"626546254846885948",  // NPCS
-	}
-
 	commandList := exportCommands()
 	for _, c := range commandList {
 		log.Println("found command:", c.AppCommand.Name)
@@ -62,9 +55,6 @@ func main() {
 	log.Println("registering commands")
 	for _, g := range s.State.Guilds {
 		// whitelist certain guilds for now
-		if !isActiveGuild(g.ID) {
-			continue
-		}
 		for _, v := range appCommands {
 			_, err := s.ApplicationCommandCreate(s.State.User.ID, g.ID, &v)
 			if err != nil {
@@ -78,37 +68,27 @@ func main() {
 	hooks.ReactRoles(s)
 	log.Println("started hooks")
 
-	s.UpdateGameStatus(4, "⚠ Under construction")
+	s.UpdateGameStatus(4, "cooler than @Hugo the Hawk")
 
 	signal.Notify(stop, os.Interrupt)
 	log.Println("bot is ready")
 	<-stop
 
-	// log.Println("unregistering commands")
-	// for _, g := range s.State.Guilds {
-	// 	ac, err := s.ApplicationCommands(s.State.User.ID, g.ID)
-	// 	if err != nil {
-	// 		log.Printf("Problem getting application commands from %v, %v", g.Name, err)
-	// 		continue
-	// 	}
-	// 	for _, v := range ac {
-	// 		// log.Println("removing: ", v.Name)
-	// 		err := s.ApplicationCommandDelete(s.State.User.ID, g.ID, v.ID)
-	// 		if err != nil {
-	// 			log.Printf("Cannot remove '%v' command: %v", v.Name, err)
-	// 		}
-	// 	}
-	// }
-	// log.Println("commands unregistered")
-
-	log.Println("shutting down")
-}
-
-func isActiveGuild(ID string) bool {
-	for _, activeID := range activeGuilds {
-		if ID == activeID {
-			return true
+	log.Println("unregistering commands")
+	for _, g := range s.State.Guilds {
+		ac, err := s.ApplicationCommands(s.State.User.ID, g.ID)
+		if err != nil {
+			log.Printf("Problem getting application commands from %v, %v", g.Name, err)
+			continue
+		}
+		for _, v := range ac {
+			err := s.ApplicationCommandDelete(s.State.User.ID, g.ID, v.ID)
+			if err != nil {
+				log.Printf("Cannot remove '%v' command: %v", v.Name, err)
+			}
 		}
 	}
-	return false
+	log.Println("commands unregistered")
+
+	log.Println("shutting down")
 }
