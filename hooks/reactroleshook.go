@@ -42,8 +42,6 @@ func ReactRoles(s *discordgo.Session) {
 			if mr.MessageID == save.Msg.ID {
 				number := emojiNum[mr.Emoji.APIName()]
 				role := save.Roles[number]
-
-				log.Println(number, mr.Emoji.APIName(), role.Name)
 				err := s.GuildMemberRoleAdd(mr.GuildID, mr.UserID, role.ID)
 				if err != nil {
 					log.Println("Couldn't add role:", mr.Emoji.User.Username, ",", err)
@@ -59,8 +57,6 @@ func ReactRoles(s *discordgo.Session) {
 			if mr.MessageID == save.Msg.ID {
 				number := emojiNum[mr.Emoji.APIName()]
 				role := save.Roles[number]
-
-				log.Println(number, mr.Emoji.APIName(), role.Name)
 				err := s.GuildMemberRoleRemove(mr.GuildID, mr.UserID, role.ID)
 				if err != nil {
 					log.Println("Couldn't del role:", mr.Emoji.User.Username, ",", err)

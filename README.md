@@ -8,7 +8,19 @@ If you are a member of said server and you know or want to learn some Go and wan
 
 * ~~Itemize commands into individual files~~
 
-* Setup reactive roles; (un)react to a message to (lose)gain a role
+* ~~Setup reactive roles; (un)react to a message to (lose)gain a role~~
+
+    * Subcommands:
+
+        * Delete (the key being removing a line from `reactrolesmessages.json`)
+
+            * /reactroles delete Message.ID
+
+            * Listen for deleted messages
+
+            * Check for missing messages when bot restarts hooks
+
+        * Edit (maybe?)
 
 * ~~Add command to wipe assignment of certain reacted roles for all members~~
 

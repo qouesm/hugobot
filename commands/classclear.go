@@ -22,7 +22,7 @@ var ClassClear = Command{
 
 		// if "command caller" does not have role "Admin", return
 		// if !hasAdmin(i.Member.Roles) {
-		if !hasAdmin(i.Member.Roles, s.State, curGuild.ID) {
+		if !hasAdmin(s.State, i.Member.Roles, curGuild.ID) {
 			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,
 				Data: &discordgo.InteractionApplicationCommandResponseData{
@@ -40,12 +40,7 @@ var ClassClear = Command{
 		}
 
 		// match department call name + 3 numbers
-		reClass, err := regexp.Compile("(CPS|MAT|EGC)[0-9]{3}")
-		if err != nil {
-			log.Println("Bad regex,", err)
-			panicResponse(s, i)
-			return
-		}
+		reClass, _ := regexp.Compile("(CPS|MAT|EGC)[0-9]{3}")
 
 		for _, member := range curGuild.Members {
 			for _, roleID := range member.Roles {
