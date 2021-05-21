@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +20,7 @@ var (
 
 // init vars
 func init() {
+	go herokuListen()
 	Token = os.Getenv("HUGOBOT")
 	commandList := exportCommands()
 	for _, c := range commandList {
@@ -41,7 +43,6 @@ func init() {
 }
 
 func main() {
-	go herokuListen()
 	s.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
 		log.Println("bot is online")
 	})
@@ -54,21 +55,33 @@ func main() {
 	defer s.Close()
 
 	stop := make(chan os.Signal)
+
+	log.Println("restarting hooks")
+	messages, err := ioutil.ReadDir("hooks/messages")
+	if err != nil {
+		log.Panicln("COULD NOT START REACT HOOKS,", err)
+	}
+	for _, msg := range messages {
+		hooks.ReactRoles(s, msg.Name())
+	}
+	log.Println("started hooks")
+
 	log.Println("registering commands")
 	for _, g := range s.State.Guilds {
-		// whitelist certain guilds for now
+		if g.Name == "new paltz cs" {
+			err := s.State.GuildRemove(g)
+			if err != nil {
+				log.Println("fuck")
+			}
+		}
 		for _, v := range appCommands {
 			_, err := s.ApplicationCommandCreate(s.State.User.ID, g.ID, &v)
 			if err != nil {
-				log.Panicf("Cannot create '%v' command: %v", v.Name, err)
+				log.Printf("Cannot create '%v' command in guild '%v': %v", v.Name, g.Name, err)
 			}
 		}
 	}
 	log.Println("commands registered")
-
-	log.Println("restarting hooks")
-	hooks.ReactRoles(s)
-	log.Println("started hooks")
 
 	s.UpdateGameStatus(4, "cooler than @Hugo the Hawk")
 
@@ -101,7 +114,7 @@ func herokuListen() {
 		log.Println("PORT not set")
 		return
 	}
-	if err := http.ListenAndServe(":" + port, nil); err != nil {
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		panic(err)
 	}
 }

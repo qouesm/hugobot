@@ -144,7 +144,6 @@ var ReactRoles = Command{
 
 		switch i.Data.Options[0].Name {
 		case "create":
-
 			/* what this case does:
 			parses the options,
 			builds a message,
@@ -187,7 +186,6 @@ var ReactRoles = Command{
 			// roles add out of order b/c race condition; fixed with sync.WaitGroup
 			var wgIns sync.WaitGroup
 			wgIns.Add(1)
-			// for j := 1; j < len(i.Data.Options[0].Options); j++ {
 			lineNum := 0
 			for _, v := range i.Data.Options[0].Options {
 				switch v.Name {
@@ -233,9 +231,9 @@ var ReactRoles = Command{
 				Roles: roles,
 			}
 
-			file, err := os.OpenFile("hooks/reactrolesmessages.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+			file, err := os.Create("hooks/messages/" + msg.ID + ".json")
 			if err != nil {
-				log.Println("problem reading file,", err)
+				log.Println("problem creating file,", err)
 				panicResponse(s, i)
 				err := s.InteractionResponseDelete(s.State.User.ID, i.Interaction)
 				if err != nil {
@@ -256,9 +254,9 @@ var ReactRoles = Command{
 				return
 			}
 			file.Write(js)
-			file.WriteString("\n")
 
-			hooks.ReactRoles(s)
+			// start hook
+			hooks.ReactRoles(s, msg.ID+".json")
 
 		// case "edit":
 		// 	s.FollowupMessageCreate(s.State.User.ID, i.Interaction, true, &discordgo.WebhookParams{Content: "not implimented yet"})
@@ -297,7 +295,7 @@ var courseName = map[string]string{
 	"CPS342": "Embedded Linux",
 	"CPS440": "Database Principles",
 	"CPS470": "Computer Networks",
-	"CPS493": "Introduction to Data Science",
+	"CPS493": "Selected Topic",
 	"MAT251": "Calculus I",
 	"MAT252": "Calculus II",
 	"MAT320": "Discrete Mathmatics",
