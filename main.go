@@ -19,12 +19,11 @@ var (
 
 // init vars
 func init() {
-	// using my own QBOT to test for now; new bot will come soon
-	Token = os.Getenv("QBOT")
+	Token = os.Getenv("HUGOBOT")
 	activeGuilds = []string{
 		"510285602785198081", // qserver
 		"842613819057635328", // The Boys
-		// "626546254846885948",  // NPCS
+		"626546254846885948",  // NPCS
 	}
 
 	commandList := exportCommands()
