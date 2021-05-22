@@ -34,17 +34,18 @@ func ReactRoles(s *discordgo.Session, msgFile string) {
 		if mr.MessageID == save.Msg.ID {
 			number := emojiNum[mr.Emoji.APIName()]
 			role := save.Roles[number]
-			err := s.GuildMemberRoleAdd(mr.GuildID, mr.UserID, role.ID)
-			if err != nil {
-				user, err1 := s.User(mr.UserID)
-				if err1 != nil {
-					log.Println("Couln't get user's struct,", err1)
+			err1 := s.GuildMemberRoleAdd(mr.GuildID, mr.UserID, role.ID)
+			user, err2 := s.User(mr.UserID)
+			if err1 != nil {
+				if err2 != nil {
+					log.Println("Couldn't get user's struct,", err1)
 					log.Println("Couldn't add role,", err)
 					return
 				}
 				log.Println("Couldn't add role:", user.Username, ",", err)
 				return
 			}
+			log.Println("rr " + user.Username + " + @" + role.Name)
 
 			dm, err := s.UserChannelCreate(mr.UserID)
 			if err != nil {
@@ -72,17 +73,18 @@ func ReactRoles(s *discordgo.Session, msgFile string) {
 		if mr.MessageID == save.Msg.ID {
 			number := emojiNum[mr.Emoji.APIName()]
 			role := save.Roles[number]
-			err := s.GuildMemberRoleRemove(mr.GuildID, mr.UserID, role.ID)
-			if err != nil {
-				user, err1 := s.User(mr.UserID)
-				if err1 != nil {
-					log.Println("Couln't get user's struct,", err1)
+			err1 := s.GuildMemberRoleRemove(mr.GuildID, mr.UserID, role.ID)
+			user, err2 := s.User(mr.UserID)
+			if err1 != nil {
+				if err2 != nil {
+					log.Println("Couldn't get user's struct,", err1)
 					log.Println("Couldn't add role,", err)
 					return
 				}
 				log.Println("Couldn't del role:", user.Username, ",", err)
 				return
 			}
+			log.Println("rr " + user.Username + " - @" + role.Name)
 
 			dm, err := s.UserChannelCreate(mr.UserID)
 			if err != nil {
