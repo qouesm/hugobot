@@ -154,7 +154,6 @@ var ReactRoles = Command{
 
 			// create message
 			var embed = discordgo.MessageEmbed{
-				// Title: i.Data.Options[0].Options[0].StringValue(),
 				Fields: []*discordgo.MessageEmbedField{
 					{
 						Name:   "\u200b", // zero width space
@@ -261,6 +260,9 @@ var ReactRoles = Command{
 		// case "edit":
 		// 	s.FollowupMessageCreate(s.State.User.ID, i.Interaction, true, &discordgo.WebhookParams{Content: "not implimented yet"})
 
+		// case "delete":
+		// 	s.FollowupMessageCreate(s.State.User.ID, i.Interaction, true, &discordgo.WebhookParams{Content: "not implimented yet"})
+
 		default:
 			log.Println("how tf")
 		}
@@ -292,10 +294,10 @@ var courseName = map[string]string{
 	"CPS415": "Discrete Algoritms",
 	"CPS425": "Language Processing",
 	"CPS485": "Projects",
-	"CPS342": "Embedded Linux",
-	"CPS440": "Database Principles",
-	"CPS470": "Computer Networks",
-	"CPS493": "Selected Topic",
+	"CPS342": "Embedded Linux", 		// elective
+	"CPS440": "Database Principles",	// elective
+	"CPS470": "Computer Networks",		// elective
+	"CPS493": "Selected Topic",			// topic courses need restructuring in the server
 	"MAT251": "Calculus I",
 	"MAT252": "Calculus II",
 	"MAT320": "Discrete Mathmatics",

@@ -103,7 +103,6 @@ func ReactRoles(s *discordgo.Session, msgFile string) {
 			}
 		}
 	})
-	// }
 }
 
 // returns int from the corresponding unicode emoji

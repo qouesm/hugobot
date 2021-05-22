@@ -13,6 +13,7 @@ var ClassClear = Command{
 		Description: "ADMIN: Remove all class roles from all server members",
 	},
 	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		log.Println("classclear")
 		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 			Data: &discordgo.InteractionApplicationCommandResponseData{},
@@ -26,17 +27,16 @@ var ClassClear = Command{
 		}
 
 		// if "command caller" does not have role "Admin", return
-		// if !hasAdmin(i.Member.Roles) {
 		if !hasAdmin(s.State, i.Member.Roles, curGuild.ID) {
-			s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionApplicationCommandResponseData{
-					Flags:   1 << 6, // only visible to caller
-					Content: "You are not allowed to use that command",
-				},
-			})
+			log.Println("no admin")
+			_, err := s.FollowupMessageCreate(s.State.User.ID, i.Interaction, true, &discordgo.WebhookParams{Content: "You are not allowed to use that command"})
+			if err != nil{
+				log.Println("problem creating follow up message,", err)
+				return
+			}
 			return
 		}
+		log.Println("admin")
 
 		curGuild.Members, err = s.GuildMembers(curGuild.ID, "0", 200)
 		if err != nil {
@@ -62,13 +62,6 @@ var ClassClear = Command{
 				}
 			}
 		}
-
-		// s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		// 	Type: discordgo.InteractionResponseChannelMessageWithSource,
-		// 	Data: &discordgo.InteractionApplicationCommandResponseData{
-		// 		Content: "Roles removed successfully",
-		// 	},
-		// })
 
 		_, err = s.FollowupMessageCreate(s.State.User.ID, i.Interaction, true, &discordgo.WebhookParams{
 			Content: "Roles removed successfully",
