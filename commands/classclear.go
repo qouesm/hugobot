@@ -13,6 +13,11 @@ var ClassClear = Command{
 		Description: "ADMIN: Remove all class roles from all server members",
 	},
 	Handler: func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+			Data: &discordgo.InteractionApplicationCommandResponseData{},
+		})
+
 		curGuild, err := s.Guild(i.GuildID)
 		if err != nil {
 			log.Println("Problem getting guild struct from Interaction,", err)
@@ -58,11 +63,19 @@ var ClassClear = Command{
 			}
 		}
 
-		s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionApplicationCommandResponseData{
-				Content: "Roles removed successfully",
-			},
+		// s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		// 	Type: discordgo.InteractionResponseChannelMessageWithSource,
+		// 	Data: &discordgo.InteractionApplicationCommandResponseData{
+		// 		Content: "Roles removed successfully",
+		// 	},
+		// })
+
+		_, err = s.FollowupMessageCreate(s.State.User.ID, i.Interaction, true, &discordgo.WebhookParams{
+			Content: "Roles removed successfully",
 		})
+		if err != nil {
+			log.Println("problem creating followup,", err)
+		}
+
 	},
 }
