@@ -68,7 +68,7 @@ func main() {
 
 	log.Println("registering commands")
 	for _, g := range s.State.Guilds {
-		if g.Name == "new paltz cs" {
+		if g.Name == "new paltz cs" {  // this shit won't go away
 			err := s.State.GuildRemove(g)
 			if err != nil {
 				log.Println("fuck")
