@@ -1,0 +1,13 @@
+{
+  "description": "This exists so I can use nodemon to automatically reload after changes",
+  "scripts": {
+    "start": "python -OOm app",
+    "dev": "nodemon -w ./app/ --exec python -m app"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "nodemonConfig": {
+    "ext": "py"
+  }
+}
